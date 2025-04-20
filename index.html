@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Chat</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Document Chat</h1>
+        
+        <div class="upload-section">
+            <input type="file" id="fileInput" accept=".txt,.pdf" class="hidden">
+            <button onclick="document.getElementById('fileInput').click()" class="upload-btn">
+                Upload Document
+            </button>
+            <p id="fileStatus" class="file-status"></p>
+        </div>
+
+        <div class="chat-container">
+            <div id="chatMessages" class="chat-messages">
+                <!-- Messages will appear here -->
+            </div>
+            
+            <div class="input-section">
+                <input type="text" id="questionInput" placeholder="Ask a question about your document..." disabled>
+                <button id="sendBtn" disabled>Send</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 
