@@ -11,8 +11,22 @@ document.getElementById('fileInput').addEventListener('change', async function(e
         document.getElementById('fileInput').disabled = true;
         document.getElementById('upload-btn').disabled = true;
 
+        // Validate file type
+        if (!file.type.match(/text\/.*|application\/pdf/)) {
+            throw new Error('Please upload a text or PDF file');
+        }
+
+        // Validate file size (10MB limit)
+        if (file.size > 10 * 1024 * 1024) {
+            throw new Error('File size must be less than 10MB');
+        }
+
         // Read file content
         fileContent = await readFileContent(file);
+        if (!fileContent) {
+            throw new Error('Could not read file content');
+        }
+
         currentFile = file;
 
         // Update UI
@@ -23,8 +37,12 @@ document.getElementById('fileInput').addEventListener('change', async function(e
 
     } catch (error) {
         console.error('Error processing file:', error);
-        document.getElementById('fileStatus').textContent = 'Error processing file. Please try again.';
-        addMessage('system', 'Error: Could not process the file. Please try again.');
+        document.getElementById('fileStatus').textContent = error.message || 'Error processing file. Please try again.';
+        addMessage('system', `Error: ${error.message || 'Could not process the file. Please try again.'}`);
+        // Reset file input
+        e.target.value = '';
+        currentFile = null;
+        fileContent = null;
     } finally {
         document.getElementById('fileInput').disabled = false;
         document.getElementById('upload-btn').disabled = false;
@@ -45,13 +63,19 @@ async function readFileContent(file) {
         reader.onload = (e) => {
             try {
                 const content = e.target.result;
+                if (!content) {
+                    reject(new Error('File is empty'));
+                    return;
+                }
                 resolve(content);
             } catch (error) {
                 reject(error);
             }
         };
         
-        reader.onerror = (error) => reject(error);
+        reader.onerror = (error) => {
+            reject(new Error('Error reading file'));
+        };
         
         if (file.type === 'application/pdf') {
             reader.readAsDataURL(file);
@@ -91,12 +115,14 @@ async function sendMessage() {
             body: JSON.stringify({
                 question,
                 document: fileContent,
-                filename: currentFile.name
+                filename: currentFile.name,
+                filetype: currentFile.type
             })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Failed to get response from server');
         }
 
         const data = await response.json();
@@ -107,7 +133,7 @@ async function sendMessage() {
 
     } catch (error) {
         console.error('Error:', error);
-        addMessage('system', 'Sorry, there was an error processing your request. Please try again.');
+        addMessage('system', `Error: ${error.message || 'Sorry, there was an error processing your request. Please try again.'}`);
     } finally {
         // Re-enable input
         input.disabled = false;
