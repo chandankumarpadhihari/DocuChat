@@ -1,15 +1,33 @@
 let currentFile = null;
 let fileContent = null;
 
+// Helper function to safely get elements
+function getElement(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        console.error(`Element with id '${id}' not found`);
+        return null;
+    }
+    return element;
+}
+
+// Helper function to safely set element properties
+function setElementProperty(id, property, value) {
+    const element = getElement(id);
+    if (element) {
+        element[property] = value;
+    }
+}
+
 document.getElementById('fileInput').addEventListener('change', async function(e) {
     const file = e.target.files[0];
     if (!file) return;
 
     try {
         // Show loading state
-        document.getElementById('fileStatus').textContent = 'Processing file...';
-        document.getElementById('fileInput').disabled = true;
-        document.getElementById('upload-btn').disabled = true;
+        setElementProperty('fileStatus', 'textContent', 'Processing file...');
+        setElementProperty('fileInput', 'disabled', true);
+        setElementProperty('upload-btn', 'disabled', true);
 
         // Validate file type
         if (!file.type.match(/text\/.*|application\/pdf/)) {
@@ -30,22 +48,22 @@ document.getElementById('fileInput').addEventListener('change', async function(e
         currentFile = file;
 
         // Update UI
-        document.getElementById('fileStatus').textContent = `File loaded: ${file.name}`;
-        document.getElementById('questionInput').disabled = false;
-        document.getElementById('sendBtn').disabled = false;
+        setElementProperty('fileStatus', 'textContent', `File loaded: ${file.name}`);
+        setElementProperty('questionInput', 'disabled', false);
+        setElementProperty('sendBtn', 'disabled', false);
         addMessage('system', `Document "${file.name}" uploaded successfully!`);
 
     } catch (error) {
         console.error('Error processing file:', error);
-        document.getElementById('fileStatus').textContent = error.message || 'Error processing file. Please try again.';
+        setElementProperty('fileStatus', 'textContent', error.message || 'Error processing file. Please try again.');
         addMessage('system', `Error: ${error.message || 'Could not process the file. Please try again.'}`);
         // Reset file input
         e.target.value = '';
         currentFile = null;
         fileContent = null;
     } finally {
-        document.getElementById('fileInput').disabled = false;
-        document.getElementById('upload-btn').disabled = false;
+        setElementProperty('fileInput', 'disabled', false);
+        setElementProperty('upload-btn', 'disabled', false);
     }
 });
 
@@ -86,7 +104,9 @@ async function readFileContent(file) {
 }
 
 async function sendMessage() {
-    const input = document.getElementById('questionInput');
+    const input = getElement('questionInput');
+    if (!input) return;
+
     const question = input.value.trim();
     
     if (!question || !currentFile || !fileContent) {
@@ -96,8 +116,8 @@ async function sendMessage() {
 
     try {
         // Disable input while processing
-        input.disabled = true;
-        document.getElementById('sendBtn').disabled = true;
+        setElementProperty('questionInput', 'disabled', true);
+        setElementProperty('sendBtn', 'disabled', true);
         
         // Add user message
         addMessage('user', question);
@@ -136,14 +156,16 @@ async function sendMessage() {
         addMessage('system', `Error: ${error.message || 'Sorry, there was an error processing your request. Please try again.'}`);
     } finally {
         // Re-enable input
-        input.disabled = false;
-        document.getElementById('sendBtn').disabled = false;
+        setElementProperty('questionInput', 'disabled', false);
+        setElementProperty('sendBtn', 'disabled', false);
         input.focus();
     }
 }
 
 function addMessage(type, content) {
-    const messagesDiv = document.getElementById('chatMessages');
+    const messagesDiv = getElement('chatMessages');
+    if (!messagesDiv) return null;
+
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
     messageDiv.textContent = content;
