@@ -1,0 +1,12 @@
+{
+  "name": "docuchat",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html styles.css script.js dist/",
+    "dev": "serve"
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  }
+} 
