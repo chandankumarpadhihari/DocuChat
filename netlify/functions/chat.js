@@ -1,4 +1,5 @@
 const { Configuration, OpenAIApi } = require('openai');
+const pdfParse = require('pdf-parse');
 
 exports.handler = async function(event, context) {
     if (event.httpMethod !== 'POST') {
@@ -25,18 +26,37 @@ exports.handler = async function(event, context) {
             };
         }
 
+        // Process document content based on file type
+        let processedContent;
+        if (filetype === 'application/pdf') {
+            try {
+                // Remove the data URL prefix if present
+                const base64Data = document.replace(/^data:application\/pdf;base64,/, '');
+                const pdfBuffer = Buffer.from(base64Data, 'base64');
+                const pdfData = await pdfParse(pdfBuffer);
+                processedContent = pdfData.text;
+                
+                if (!processedContent.trim()) {
+                    throw new Error('No text content found in PDF');
+                }
+            } catch (pdfError) {
+                console.error('PDF parsing error:', pdfError);
+                return {
+                    statusCode: 400,
+                    body: JSON.stringify({ 
+                        message: 'Error processing PDF file',
+                        error: pdfError.message 
+                    })
+                };
+            }
+        } else {
+            processedContent = document;
+        }
+
         const configuration = new Configuration({
             apiKey: process.env.OPENAI_API_KEY
         });
         const openai = new OpenAIApi(configuration);
-
-        // Process document content based on file type
-        let processedContent = document;
-        if (filetype === 'application/pdf') {
-            // For PDF files, we're getting base64 content
-            // You might want to add PDF text extraction here
-            processedContent = 'PDF content: [Content extracted from PDF]';
-        }
 
         // Create a prompt that includes the document content and the question
         const prompt = `Document content from ${filename}:\n\n${processedContent}\n\nQuestion: ${question}\n\nAnswer:`;

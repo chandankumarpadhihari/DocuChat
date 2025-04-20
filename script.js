@@ -104,7 +104,7 @@ async function sendMessage() {
         input.value = '';
 
         // Show loading indicator
-        const loadingMessage = addMessage('ai', 'Thinking...');
+        const loadingMessage = addMessage('ai', 'Processing document and generating response...');
         
         // Call OpenAI API
         const response = await fetch('/.netlify/functions/chat', {
