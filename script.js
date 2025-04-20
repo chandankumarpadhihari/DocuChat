@@ -127,7 +127,7 @@ async function sendMessage() {
         const loadingMessage = addMessage('ai', 'Processing document and generating response...');
         
         // Call OpenAI API
-        const response = await fetch('/.netlify/functions/chat', {
+        const response = await fetch('https://docuchatai.netlify.app/.netlify/functions/chat', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

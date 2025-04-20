@@ -80,11 +80,29 @@ exports.handler = async function(event, context) {
         
         // Handle specific OpenAI API errors
         if (error.response) {
+            console.error('OpenAI API Error Details:', {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data
+            });
+            
             return {
                 statusCode: error.response.status,
                 body: JSON.stringify({ 
                     message: 'OpenAI API Error',
-                    error: error.response.data.error?.message || error.message
+                    error: error.response.data.error?.message || error.message,
+                    details: error.response.data.error || 'No additional details available'
+                })
+            };
+        }
+
+        // Handle OpenAI API key issues
+        if (error.message.includes('API key')) {
+            return {
+                statusCode: 500,
+                body: JSON.stringify({ 
+                    message: 'OpenAI API Configuration Error',
+                    error: 'The OpenAI API key is either missing or invalid. Please check your environment variables.'
                 })
             };
         }
@@ -93,7 +111,8 @@ exports.handler = async function(event, context) {
             statusCode: 500,
             body: JSON.stringify({ 
                 message: 'Error processing request',
-                error: error.message 
+                error: error.message,
+                stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
             })
         };
     }
