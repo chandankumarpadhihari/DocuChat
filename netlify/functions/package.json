@@ -1,0 +1,9 @@
+{
+  "name": "docuchat-functions",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "openai": "^3.2.1",
+    "pdf-parse": "^1.1.1"
+  }
+} 

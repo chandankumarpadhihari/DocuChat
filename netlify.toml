@@ -3,6 +3,13 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["pdf-parse"]
+
+[build.environment]
+  NODE_VERSION = "16"
+
 [[plugins]]
   package = "@netlify/plugin-functions-install-core"
 
